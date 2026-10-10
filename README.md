@@ -5,22 +5,26 @@ Galaxy Z Flip 8. It changes the **cover screen**, the **interior screen**, or bo
 
 ## Features
 
-- Photos from Unsplash albums (collections). Two wallpaper albums are included by default; add more
-  by link, and disable them all to get photos from all of Unsplash.
-- Auto-change every 15 min to every day, switched on or off per screen.
-- **Next** per screen, **Save** to `Pictures/WallSwap`, and **Ban** (never show that photo again).
+- Home screen with the wallpapers currently on each screen and a grid of Unsplash albums
+  (collections). Two wallpaper albums are included by default; add more by link.
+- Open an album to browse its photos, preview one full screen and set it on the cover screen, the
+  interior screen or both.
+- Mark albums as **Random** sources for automatic changes and the refresh buttons. With no album
+  marked, random photos come from all of Unsplash.
+- Auto-change every 15 min to every day, switched on or off per screen (Settings).
+- **Save** to `Pictures/WallSwap` and **Never show again** for the current wallpapers.
 - Photographer credit with links to Unsplash.
-- Quick Settings tile **Next wallpaper**: new photo on the screen in use.
+- Quick Settings tile **Next wallpaper**: new random photo on the screen in use.
 
 ## Setup
 
 1. Install the APK (see below) and open WallSwap.
 2. Tap **Allow** under *Background changes* so One UI doesn't put the app to sleep.
-3. Optional: add albums by pasting links like `https://unsplash.com/collections/<id>/<name>`.
+3. Optional: add albums with **Add album** and a link like `https://unsplash.com/collections/<id>/<name>`.
 4. Optional: add the **Next wallpaper** tile from the Quick Settings edit screen.
 
-The Unsplash Access Key is built into the APK. Demo apps get 50 requests per hour, and each
-wallpaper change uses 2.
+The Unsplash Access Key is built into the APK. Demo apps get 50 requests per hour: a wallpaper
+change uses 2 and each page of 30 album photos uses 1.
 
 ## How the cover and interior screens work
 

@@ -12,20 +12,31 @@ object Unsplash {
     /** Required by the Unsplash guidelines on every link back to Unsplash. */
     private const val UTM = "utm_source=wallswap&utm_medium=referral"
 
-    class Candidate(val photo: Photo, val rawUrl: String, val downloadLocation: String)
+    /** The API maximum. */
+    const val PAGE_SIZE = 30
 
     /** Random portrait photos from the given collections, or from all of Unsplash when empty. */
-    fun randomPhotos(collectionIds: List<String>): List<Candidate> {
+    fun randomPhotos(collectionIds: List<String>): List<Photo> {
         var query = "count=10&orientation=portrait&content_filter=high"
         if (collectionIds.isNotEmpty()) query += "&collections=" + collectionIds.joinToString(",")
-        val array = JSONArray(api("$API/photos/random?$query"))
-        return (0 until array.length()).map { parseCandidate(array.getJSONObject(it)) }
+        return parsePhotos(JSONArray(api("$API/photos/random?$query")))
     }
 
-    /** "Title by Curator", so albums with the same title stay distinguishable. */
-    fun collectionName(collectionId: String): String {
-        val json = JSONObject(api("$API/collections/$collectionId"))
-        return "${json.getString("title")} by ${json.getJSONObject("user").getString("name")}"
+    /** One page of an album's portrait photos. */
+    fun albumPhotos(albumId: String, page: Int): List<Photo> =
+        parsePhotos(JSONArray(api("$API/collections/$albumId/photos?page=$page&per_page=$PAGE_SIZE&orientation=portrait")))
+
+    /** The album with this ID, enabled as a random source. */
+    fun album(albumId: String): Album {
+        val json = JSONObject(api("$API/collections/$albumId"))
+        return Album(
+            id = albumId,
+            title = json.getString("title"),
+            curator = json.getJSONObject("user").getString("name"),
+            coverUrl = json.getJSONObject("cover_photo").getJSONObject("urls").getString("raw"),
+            totalPhotos = json.getInt("total_photos"),
+            enabled = true,
+        )
     }
 
     /** Accepts a collection link (https://unsplash.com/collections/<id>/<name>) or a bare ID. */
@@ -37,24 +48,26 @@ object Unsplash {
     }
 
     /** Unsplash requires reporting each photo that is used as a download. */
-    fun trackDownload(downloadLocation: String) {
-        api(downloadLocation)
+    fun trackDownload(photo: Photo) {
+        api(photo.downloadLocation)
     }
 
     /** JPEG cropped by Unsplash's image service to exactly [width] x [height]. */
-    fun downloadImage(rawUrl: String, width: Int, height: Int): ByteArray =
-        request("$rawUrl&w=$width&h=$height&fit=crop&crop=entropy&fm=jpg&q=90", authorized = false)
+    fun downloadImage(photo: Photo, width: Int, height: Int): ByteArray =
+        request("${photo.rawUrl}&w=$width&h=$height&fit=crop&crop=entropy&fm=jpg&q=90", authorized = false)
 
-    private fun parseCandidate(json: JSONObject): Candidate {
+    /** Display URL of an image resized by Unsplash's image service to [width] pixels wide. */
+    fun imageUrl(rawUrl: String, width: Int) = "$rawUrl&w=$width&fit=max&fm=jpg&q=75"
+
+    private fun parsePhotos(array: JSONArray): List<Photo> = (0 until array.length()).map {
+        val json = array.getJSONObject(it)
         val user = json.getJSONObject("user")
         val links = json.getJSONObject("links")
-        return Candidate(
-            photo = Photo(
-                id = json.getString("id"),
-                photographer = user.getString("name"),
-                photographerUrl = user.getJSONObject("links").getString("html") + "?$UTM",
-                pageUrl = links.getString("html") + "?$UTM",
-            ),
+        Photo(
+            id = json.getString("id"),
+            photographer = user.getString("name"),
+            photographerUrl = user.getJSONObject("links").getString("html") + "?$UTM",
+            pageUrl = links.getString("html") + "?$UTM",
             rawUrl = json.getJSONObject("urls").getString("raw"),
             downloadLocation = links.getString("download_location"),
         )

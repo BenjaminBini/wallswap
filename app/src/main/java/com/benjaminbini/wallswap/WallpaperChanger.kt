@@ -24,24 +24,27 @@ private val Screen.wallpaperFlags: Int
 /** The image currently set on [screen], kept for the preview and for saving it. */
 fun imageFile(context: Context, screen: Screen) = File(context.filesDir, "${screen.name}.jpg")
 
-/** Puts a new Unsplash photo on [screen], which must be the active screen. */
-suspend fun changeWallpaper(context: Context, prefs: Prefs, screen: Screen) = withContext(Dispatchers.IO) {
-    val currentId = prefs.photo(screen)?.id
-    val banned = prefs.banned
-    val albumIds = prefs.albums.filter { it.enabled }.map { it.id }
-    val candidate = Unsplash.randomPhotos(albumIds)
-        .firstOrNull { it.photo.id != currentId && it.photo.id !in banned }
-        ?: error("Unsplash returned no new photo for the enabled albums")
+/** Puts [chosen], or a random photo from the enabled albums when null, on [screen], which must be the active screen. */
+suspend fun changeWallpaper(context: Context, prefs: Prefs, screen: Screen, chosen: Photo?) = withContext(Dispatchers.IO) {
+    val photo = chosen ?: randomPhoto(prefs, screen)
 
     val (width, height) = wallpaperSize(context, screen)
-    val image = Unsplash.downloadImage(candidate.rawUrl, width, height)
+    val image = Unsplash.downloadImage(photo, width, height)
 
     check(activeScreen(context) == screen) { "The phone was folded or opened during the change" }
     WallpaperManager.getInstance(context).setStream(image.inputStream(), null, true, screen.wallpaperFlags)
 
     imageFile(context, screen).writeBytes(image)
-    prefs.recordChange(screen, candidate.photo)
-    Unsplash.trackDownload(candidate.downloadLocation)
+    prefs.recordChange(screen, photo)
+    Unsplash.trackDownload(photo)
+}
+
+private fun randomPhoto(prefs: Prefs, screen: Screen): Photo {
+    val currentId = prefs.photo(screen)?.id
+    val banned = prefs.banned
+    val albumIds = prefs.albums.filter { it.enabled }.map { it.id }
+    return Unsplash.randomPhotos(albumIds).firstOrNull { it.id != currentId && it.id !in banned }
+        ?: error("Unsplash returned no new photo for the enabled albums")
 }
 
 /** Copies the image of [screen] to Pictures/WallSwap. */

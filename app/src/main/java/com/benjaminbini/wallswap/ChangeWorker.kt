@@ -24,8 +24,10 @@ class ChangeWorker(context: Context, params: WorkerParameters) : CoroutineWorker
         return try {
             val active = activeScreen(applicationContext)
             val requested = inputData.getBoolean(KEY_CHANGE_ACTIVE, false)
-            if (requested || prefs.isQueued(active) || Schedule.isDue(prefs, active)) {
-                changeWallpaper(applicationContext, prefs, active)
+            if (prefs.isQueued(active)) {
+                changeWallpaper(applicationContext, prefs, active, prefs.queuedPhoto(active))
+            } else if (requested || Schedule.isDue(prefs, active)) {
+                changeWallpaper(applicationContext, prefs, active, chosen = null)
             }
             Result.success()
         } catch (e: CancellationException) {
@@ -73,9 +75,12 @@ object Schedule {
         workManager.enqueueUniquePeriodicWork(PERIODIC_WORK, ExistingPeriodicWorkPolicy.UPDATE, request)
     }
 
-    /** Queues a new photo for [screen]: set right away if it is in use, otherwise once it is. */
-    fun requestChange(context: Context, screen: Screen) {
-        Prefs(context).queue(screen)
+    /**
+     * Queues [photo], or a random photo when null, for [screen]: set right away if the screen is
+     * in use, otherwise as soon as it is.
+     */
+    fun requestChange(context: Context, screen: Screen, photo: Photo?) {
+        Prefs(context).queue(screen, photo)
         update(context)
         checkNow(context, changeActive = false)
     }
