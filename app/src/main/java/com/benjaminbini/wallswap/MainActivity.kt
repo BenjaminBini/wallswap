@@ -307,7 +307,7 @@ private fun AlbumsCard(albums: List<Album>, onChange: (List<Album>) -> Unit) {
                         adding = true
                         runAndToast(context, success = null) {
                             val id = Unsplash.parseCollectionId(input)
-                            val title = withContext(Dispatchers.IO) { Unsplash.collectionTitle(id) }
+                            val title = withContext(Dispatchers.IO) { Unsplash.collectionName(id) }
                             onChange(albums.filter { it.id != id } + Album(id, title, enabled = true))
                             input = ""
                         }

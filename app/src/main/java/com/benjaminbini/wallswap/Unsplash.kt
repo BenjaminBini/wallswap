@@ -22,8 +22,11 @@ object Unsplash {
         return (0 until array.length()).map { parseCandidate(array.getJSONObject(it)) }
     }
 
-    fun collectionTitle(collectionId: String): String =
-        JSONObject(api("$API/collections/$collectionId")).getString("title")
+    /** "Title by Curator", so albums with the same title stay distinguishable. */
+    fun collectionName(collectionId: String): String {
+        val json = JSONObject(api("$API/collections/$collectionId"))
+        return "${json.getString("title")} by ${json.getJSONObject("user").getString("name")}"
+    }
 
     /** Accepts a collection link (https://unsplash.com/collections/<id>/<name>) or a bare ID. */
     fun parseCollectionId(input: String): String {

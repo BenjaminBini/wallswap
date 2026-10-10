@@ -5,7 +5,8 @@ Galaxy Z Flip 8. It changes the **cover screen**, the **interior screen**, or bo
 
 ## Features
 
-- Photos from Unsplash: all of Unsplash, or only the albums (collections) you add by link.
+- Photos from Unsplash albums (collections). Two wallpaper albums are included by default; add more
+  by link, and disable them all to get photos from all of Unsplash.
 - Auto-change every 15 min to every day, switched on or off per screen.
 - **Next** per screen, **Save** to `Pictures/WallSwap`, and **Ban** (never show that photo again).
 - Photographer credit with links to Unsplash.

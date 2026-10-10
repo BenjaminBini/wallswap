@@ -13,6 +13,12 @@ enum class Screen(val title: String, val inUseWhen: String) {
 /** An Unsplash collection the photos are picked from. */
 data class Album(val id: String, val title: String, val enabled: Boolean)
 
+/** Albums used until the user changes the list; both checked to serve photos through the API. */
+private val DEFAULT_ALBUMS = listOf(
+    Album("1065976", "Wallpapers by Unsplash Archive", enabled = true),
+    Album("941021", "Wallpapers by Jim Myhrberg", enabled = true),
+)
+
 data class Photo(
     val id: String,
     val photographer: String,
@@ -66,7 +72,7 @@ class Prefs(context: Context) {
 
     var albums: List<Album>
         get() {
-            val array = JSONArray(sp.getString("albums", "[]"))
+            val array = JSONArray(sp.getString("albums", null) ?: return DEFAULT_ALBUMS)
             return (0 until array.length()).map {
                 val json = array.getJSONObject(it)
                 Album(json.getString("id"), json.getString("title"), json.getBoolean("enabled"))
