@@ -13,13 +13,13 @@ Galaxy Z Flip 8. It changes the **cover screen**, the **interior screen**, or bo
 
 ## Setup
 
-1. Create a free app at [Unsplash Developers](https://unsplash.com/oauth/applications) and copy its
-   **Access Key**. Demo apps get 50 requests per hour, and each wallpaper change uses 2.
-2. Install the APK (see below) and open WallSwap.
-3. Paste the access key, then tap **Allow** under *Background changes* so One UI doesn't put the
-   app to sleep.
-4. Optional: add albums by pasting links like `https://unsplash.com/collections/<id>/<name>`.
-5. Optional: add the **Next wallpaper** tile from the Quick Settings edit screen.
+1. Install the APK (see below) and open WallSwap.
+2. Tap **Allow** under *Background changes* so One UI doesn't put the app to sleep.
+3. Optional: add albums by pasting links like `https://unsplash.com/collections/<id>/<name>`.
+4. Optional: add the **Next wallpaper** tile from the Quick Settings edit screen.
+
+The Unsplash Access Key is built into the APK. Demo apps get 50 requests per hour, and each
+wallpaper change uses 2.
 
 ## How the cover and interior screens work
 
@@ -35,11 +35,20 @@ notification "Watching the fold state") keeps WallSwap allowed to read the hinge
 scheduled change runs. Checks run every 15 minutes, so a queued or due change lands within about
 15 minutes of folding or opening the phone.
 
+## Build
+
+The Unsplash Access Key stays out of this public repo and is read from the Gradle property
+`unsplashAccessKey`; the build fails without it.
+
+- **Locally**: add `unsplashAccessKey=<your key>` to `~/.gradle/gradle.properties`, then run
+  `./gradlew assembleRelease` → `app/build/outputs/apk/release/app-release.apk`.
+- **GitHub Actions**: add the repository secret `UNSPLASH_ACCESS_KEY` (Settings → Secrets and
+  variables → Actions).
+
 ## Install
 
 - **From GitHub Actions**: every push builds `wallswap.apk` (Actions tab → latest run →
   *wallswap-apk* artifact). Pushing a tag like `v0.1.0` also publishes it as a GitHub release.
-- **Locally**: `./gradlew assembleRelease` → `app/build/outputs/apk/release/app-release.apk`.
 
 Every build is signed with the committed `app/wallswap.keystore`, so a new APK installs over the
 previous one. It's a convenience key for a personal, sideloaded app; don't use it for a Play Store

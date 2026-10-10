@@ -6,6 +6,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+// Kept out of this public repo: set it in ~/.gradle/gradle.properties or ORG_GRADLE_PROJECT_unsplashAccessKey.
+val unsplashAccessKey: String = providers.gradleProperty("unsplashAccessKey").orNull?.takeIf { it.isNotBlank() }
+    ?: error("Missing Gradle property unsplashAccessKey (your Unsplash Access Key)")
+
 android {
     namespace = "com.benjaminbini.wallswap"
     compileSdk = 36
@@ -16,6 +20,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+        buildConfigField("String", "UNSPLASH_ACCESS_KEY", "\"$unsplashAccessKey\"")
     }
 
     // Committed key so every build (local or CI) can update the installed app in place.
@@ -47,6 +52,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

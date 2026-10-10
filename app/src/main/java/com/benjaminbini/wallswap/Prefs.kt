@@ -23,10 +23,6 @@ data class Photo(
 class Prefs(context: Context) {
     val sp: SharedPreferences = context.getSharedPreferences("wallswap", Context.MODE_PRIVATE)
 
-    var accessKey: String
-        get() = sp.getString("access_key", "")!!
-        set(value) = sp.edit().putString("access_key", value.trim()).apply()
-
     /** 0 means manual changes only. */
     var intervalMinutes: Int
         get() = sp.getInt("interval_minutes", 60)

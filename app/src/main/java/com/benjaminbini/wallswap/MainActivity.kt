@@ -61,7 +61,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -102,7 +101,6 @@ class MainActivity : ComponentActivity() {
 private fun WallSwapApp(prefs: Prefs) {
     val context = LocalContext.current
     rememberPrefsVersion(prefs) // Recompose whenever a preference changes, e.g. after a background change.
-    val accessKey = prefs.accessKey
     val interval = prefs.intervalMinutes
     val albums = prefs.albums
     val lastError = prefs.lastError
@@ -119,9 +117,6 @@ private fun WallSwapApp(prefs: Prefs) {
         item { Text("WallSwap", style = MaterialTheme.typography.headlineMedium) }
         if (lastError != null) {
             item { ErrorCard(lastError, onDismiss = { prefs.lastError = null }) }
-        }
-        if (accessKey.isEmpty()) {
-            item { AccessKeyCard(accessKey, onSave = { prefs.accessKey = it }) }
         }
         if (!batteryUnrestricted) {
             item { BatteryCard() }
@@ -148,10 +143,7 @@ private fun WallSwapApp(prefs: Prefs) {
                 Schedule.update(context)
             })
         }
-        item { AlbumsCard(albums, accessKey, onChange = { prefs.albums = it }) }
-        if (accessKey.isNotEmpty()) {
-            item { AccessKeyCard(accessKey, onSave = { prefs.accessKey = it }) }
-        }
+        item { AlbumsCard(albums, onChange = { prefs.albums = it }) }
     }
 }
 
@@ -278,7 +270,7 @@ private fun IntervalCard(minutes: Int, onChange: (Int) -> Unit) {
 }
 
 @Composable
-private fun AlbumsCard(albums: List<Album>, accessKey: String, onChange: (List<Album>) -> Unit) {
+private fun AlbumsCard(albums: List<Album>, onChange: (List<Album>) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var input by remember { mutableStateOf("") }
@@ -315,7 +307,7 @@ private fun AlbumsCard(albums: List<Album>, accessKey: String, onChange: (List<A
                         adding = true
                         runAndToast(context, success = null) {
                             val id = Unsplash.parseCollectionId(input)
-                            val title = withContext(Dispatchers.IO) { Unsplash.collectionTitle(accessKey, id) }
+                            val title = withContext(Dispatchers.IO) { Unsplash.collectionTitle(id) }
                             onChange(albums.filter { it.id != id } + Album(id, title, enabled = true))
                             input = ""
                         }
@@ -323,34 +315,6 @@ private fun AlbumsCard(albums: List<Album>, accessKey: String, onChange: (List<A
                     }
                 },
             ) { Text("Add album") }
-        }
-    }
-}
-
-@Composable
-private fun AccessKeyCard(current: String, onSave: (String) -> Unit) {
-    val uriHandler = LocalUriHandler.current
-    var input by remember(current) { mutableStateOf(current) }
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Unsplash access key", style = MaterialTheme.typography.titleMedium)
-            Text(
-                "Create a free app on Unsplash Developers and paste its Access Key here.",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            TextButton(onClick = { uriHandler.openUri("https://unsplash.com/oauth/applications") }) {
-                Text("Open Unsplash Developers")
-            }
-            OutlinedTextField(
-                value = input,
-                onValueChange = { input = it },
-                label = { Text("Access key") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Button(onClick = { onSave(input) }, enabled = input.isNotBlank() && input.trim() != current) {
-                Text("Save")
-            }
         }
     }
 }

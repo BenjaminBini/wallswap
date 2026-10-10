@@ -21,6 +21,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build release APK
+        env:
+          ORG_GRADLE_PROJECT_unsplashAccessKey: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: ./gradlew assembleRelease && cp app/build/outputs/apk/release/app-release.apk wallswap.apk
 
       - uses: actions/upload-artifact@v4

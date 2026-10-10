@@ -26,12 +26,10 @@ fun imageFile(context: Context, screen: Screen) = File(context.filesDir, "${scre
 
 /** Puts a new Unsplash photo on [screen], which must be the active screen. */
 suspend fun changeWallpaper(context: Context, prefs: Prefs, screen: Screen) = withContext(Dispatchers.IO) {
-    val accessKey = prefs.accessKey
-    check(accessKey.isNotEmpty()) { "Add your Unsplash access key first" }
     val currentId = prefs.photo(screen)?.id
     val banned = prefs.banned
     val albumIds = prefs.albums.filter { it.enabled }.map { it.id }
-    val candidate = Unsplash.randomPhotos(accessKey, albumIds)
+    val candidate = Unsplash.randomPhotos(albumIds)
         .firstOrNull { it.photo.id != currentId && it.photo.id !in banned }
         ?: error("Unsplash returned no new photo for the enabled albums")
 
@@ -43,7 +41,7 @@ suspend fun changeWallpaper(context: Context, prefs: Prefs, screen: Screen) = wi
 
     imageFile(context, screen).writeBytes(image)
     prefs.recordChange(screen, candidate.photo)
-    Unsplash.trackDownload(accessKey, candidate.downloadLocation)
+    Unsplash.trackDownload(candidate.downloadLocation)
 }
 
 /** Copies the image of [screen] to Pictures/WallSwap. */
